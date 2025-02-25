@@ -1,0 +1,24 @@
+FROM debian:jessie-slim AS build
+LABEL authors="clegginabox"
+
+COPY ./data/freexian-archive-keyring_2022.06.08_all.deb /tmp/freexian-archive-keyring_2022.06.08_all.deb
+COPY ./data/archive-key.gpg /etc/apt/trusted.gpg.d/freexian-archive-extended-lts.gpg
+
+RUN dpkg -i /tmp/freexian-archive-keyring_2022.06.08_all.deb \
+    && rm /etc/apt/sources.list \
+    && echo "deb http://deb.freexian.com/extended-lts jessie main contrib non-free" > /etc/apt/sources.list.d/extended-lts.list \
+    && rm /tmp/freexian-archive-keyring_2022.06.08_all.deb \
+    && apt-get update -y \
+    && apt-get install -y \
+        php5-cli \
+        apt-transport-https \
+        curl \
+        gcc-4.9 \
+        --download-only
+
+
+FROM scratch AS packages
+
+COPY --from=build /var/cache/apt/archives/*.deb /
+
+
