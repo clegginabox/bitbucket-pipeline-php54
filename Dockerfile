@@ -1,14 +1,16 @@
 FROM debian:jessie-slim
 LABEL authors="clegginabox"
 
-ENV NODE_VERSION="v6.17.1"
+ENV NODE_VERSION="v10.24.1"
 ENV BASH_ENV /home/user/.bash_env
 
 # Copy locally stored apt-packages into the image
 COPY ./packages/*.deb /tmp/packages/
 
 # Install the .deb packages
-RUN dpkg -i /tmp/packages/*.deb && apt-get install -f && rm -rf /tmp/packages
+RUN dpkg -i /tmp/packages/*.deb \
+    && apt-get install -f \
+    && rm -rf /tmp/packages
 
 # Use bash for the shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -23,5 +25,8 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | P
 RUN echo node > .nvmrc \
     && nvm install ${NODE_VERSION}
 
-# Add composer
-COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+# Install composer
+COPY --from=composer:2.2.0 /usr/bin/composer /usr/local/bin/composer
+
+# Goto temporary directory.
+WORKDIR /tmp
